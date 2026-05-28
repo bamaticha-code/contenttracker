@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สินไทยแทรกเตอร์ — Content Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1a5c2e;--gm:#2d7a42;--gl:#e8f5ec;--gp:#f4faf6;--am:#c47d0e;--al:#fef3dc;--bd:#d0ddd4;--wh:#ffffff;--r:12px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:#f0f4f1;color:#1e2a22;min-height:100vh;font-size:15px}
+.shell{max-width:820px;margin:0 auto;padding:0 16px 60px}
+header{padding:22px 0 0;display:flex;align-items:center;gap:12px;margin-bottom:0}
+.logo{width:38px;height:38px;background:var(--g);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:600;color:#fff}
+.ht h1{font-size:16px;font-weight:600;color:var(--g)}
+.ht p{font-size:11px;color:#8fa495}
+.tabs{display:flex;border-bottom:1.5px solid var(--bd);margin:14px 0 20px}
+.tab{padding:9px 16px;background:transparent;border:none;font-family:inherit;font-size:13px;color:#8fa495;cursor:pointer;position:relative}
+.tab:hover{color:var(--gm)}
+.tab.on{color:var(--g);font-weight:500}
+.tab.on::after{content:'';position:absolute;bottom:-1.5px;left:0;right:0;height:2px;background:var(--g);border-radius:2px 2px 0 0}
+.badge{background:var(--g);color:#fff;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.pg{display:none}.pg.on{display:block}
+
+/* login */
+.login-wrap{max-width:320px;margin:60px auto;background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:28px 24px;text-align:center}
+.login-wrap .logo{width:48px;height:48px;font-size:18px;margin:0 auto 14px}
+.login-wrap h2{font-size:15px;font-weight:500;margin-bottom:4px;color:var(--g)}
+.login-wrap p{font-size:12px;color:#8fa495;margin-bottom:18px}
+.login-wrap input{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:var(--rs);font-family:inherit;font-size:14px;color:#1e2a22;background:#f4faf6;margin-bottom:10px}
+.login-wrap input:focus{outline:none;border-color:var(--g)}
+.login-wrap button{width:100%;padding:11px;background:var(--g);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.login-wrap button:hover{background:var(--gm)}
+.user-chip{display:flex;align-items:center;gap:6px;margin-left:auto}
+.user-dot{width:8px;height:8px;background:var(--gm);border-radius:50%}
+.user-name{font-size:12px;color:#4a5c50}
+.logout-btn{font-size:11px;color:#8fa495;background:none;border:none;cursor:pointer;padding:2px 6px}
+.logout-btn:hover{color:var(--g)}
+
+/* sync status */
+.sync-bar{display:flex;align-items:center;gap:6px;font-size:11px;color:#8fa495;margin-bottom:12px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#8fa495}
+.sync-dot.ok{background:#1D9E75}
+.sync-dot.err{background:#E24B4A}
+.sync-dot.loading{background:#EF9F27;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* cat pills */
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.cat{padding:5px 13px;border-radius:20px;border:1px solid var(--bd);background:var(--wh);font-family:inherit;font-size:12px;color:#4a5c50;cursor:pointer}
+.cat:hover{border-color:var(--g);color:var(--g)}
+.cat.on{background:var(--g);border-color:var(--g);color:#fff;font-weight:500}
+
+/* input card */
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.lbl{font-size:12px;font-weight:500;color:#4a5c50;margin-bottom:8px;display:block}
+textarea{width:100%;min-height:80px;border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:13px;color:#1e2a22;resize:vertical;background:#f4faf6;line-height:1.7}
+textarea:focus{outline:none;border-color:var(--g);background:var(--wh)}
+textarea::placeholder{color:#8fa495}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.og label{font-size:11px;color:#8fa495;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+select{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--bd);border-radius:var(--rs);font-family:inherit;font-size:12px;color:#1e2a22;background:#f4faf6;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+select:focus{outline:none;border-color:var(--g)}
+.gbtn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:7px}
+.gbtn:hover{background:var(--gm)}
+.gbtn:disabled{background:#8fa495;cursor:not-allowed}
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:#fff5f5;border:1px solid #fcc;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:#c0392b;margin-top:10px}
+
+/* results */
+.rcard{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:12px;animation:fu .25s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.rtag{padding:8px 14px;background:var(--gl);font-size:11px;font-weight:500;color:var(--g);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:6px}
+.rbody{padding:14px;font-size:13px;color:#1e2a22;line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.rfooter{margin:0 14px 14px;padding:10px 12px;background:#f4faf6;border-radius:var(--rs);border:1px dashed var(--bd)}
+.rfooter-lbl{font-size:10px;font-weight:500;color:#8fa495;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rfooter-body{font-size:11px;color:#4a5c50;line-height:1.8;white-space:pre-wrap}
+.rfooter-ht{font-size:11px;color:#2d7a42;margin-top:5px;line-height:1.8}
+.ract{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--bd);background:#f4faf6;flex-wrap:wrap}
+.abtn{padding:5px 11px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--wh);font-family:inherit;font-size:11px;color:#4a5c50;cursor:pointer;display:flex;align-items:center;gap:4px}
+.abtn:hover{border-color:var(--g);color:var(--g)}
+.abtn.ok{background:var(--gl);color:var(--g);border-color:var(--gm);margin-left:auto}
+.abtn.copied{background:var(--gl);color:var(--g);border-color:var(--g)}
+.abtn.regen{background:var(--al);border-color:#e8c47a;color:var(--am)}
+.empty{text-align:center;padding:40px 16px;color:#8fa495}
+.empty p{font-size:13px;line-height:1.7}
+.empty strong{color:var(--g)}
+.rl-hdr{font-size:11px;font-weight:500;color:#8fa495;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.rl-hdr::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* checklist */
+.wknav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.wknav button{background:transparent;border:1px solid var(--bd);border-radius:var(--rs);padding:4px 12px;cursor:pointer;font-size:12px;color:#1e2a22;font-family:inherit}
+.wknav button:hover{background:var(--gl);border-color:var(--g)}
+.wklbl{font-size:14px;font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--wh);border:1px solid var(--bd);border-radius:var(--rs);padding:10px;text-align:center}
+.sn{font-size:20px;font-weight:600;color:var(--g)}
+.sl{font-size:11px;color:#8fa495;margin-top:2px}
+.cl-card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.cl-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cl-title{font-size:13px;font-weight:500}
+.cl-badge{font-size:10px;padding:2px 8px;border-radius:10px;margin-left:auto}
+.bp{background:#EEEDFE;color:#3C3489}.ba{background:var(--gl);color:var(--g)}
+.trow{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-top:1px solid #f4faf6}
+.cb{width:16px;height:16px;border:1.5px solid var(--bd);border-radius:4px;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:var(--wh)}
+.cb:hover{border-color:var(--g)}
+.cb.ck{background:var(--g);border-color:var(--g)}
+.cb.ck::after{content:'';display:block;width:3px;height:7px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px)}
+.tbody{flex:1}
+.tlbl{font-size:12px;color:#1e2a22;line-height:1.5}
+.tlbl.dn{text-decoration:line-through;color:#8fa495}
+.tsub{font-size:11px;color:#8fa495;margin-top:2px;line-height:1.5}
+.ttag{font-size:9px;padding:1px 6px;border-radius:3px;margin-right:3px;display:inline-block}
+.tym{background:#E6F1FB;color:#0C447C}.tsl{background:#FAEEDA;color:#633806}
+.tus{background:#FAECE7;color:#712B13}.tin{background:#EEEDFE;color:#3C3489}
+.who{font-size:10px;color:#8fa495;margin-top:3px}
+.note-a{width:100%;min-height:44px;font-size:11px;border:1px solid var(--bd);border-radius:var(--rs);padding:7px 9px;background:#f4faf6;color:#1e2a22;resize:vertical;font-family:inherit;margin-top:6px;line-height:1.6}
+.note-a::placeholder{color:#8fa495}
+.go-btn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--wh);font-family:inherit;font-size:11px;color:#4a5c50;cursor:pointer}
+.go-btn:hover{border-color:var(--g);color:var(--g);background:var(--gl)}
+.si{background:var(--wh);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;animation:fu .25s ease both}
+.si-hdr{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.si-cat{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;background:var(--gl);color:var(--g)}
+.si-meta{font-size:10px;color:#8fa495}
+.si-lbl{font-size:11px;color:#4a5c50;margin-bottom:5px}
+.si-txt{font-size:12px;color:#1e2a22;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+.si-acts{display:flex;gap:6px;margin-top:8px}
+.del-btn{font-size:10px;padding:3px 9px;border:1px solid #fcc;border-radius:4px;background:#fff5f5;color:#c0392b;cursor:pointer;font-family:inherit;margin-left:auto}
+.no-saved{font-size:12px;color:#8fa495;text-align:center;padding:20px 0;line-height:1.7}
+</style>
+</head>
+<body>
+<div id="loginPage">
+  <div class="login-wrap">
+    <div class="logo">สท</div>
+    <h2>สินไทยแทรกเตอร์</h2>
+    <p>Content Manager — ระบุชื่อเพื่อเข้าใช้งาน</p>
+    <input type="text" id="nameInput" placeholder="ชื่อของคุณ เช่น บาม, แป้ง..." maxlength="30">
+    <button onclick="login()">เข้าใช้งาน →</button>
+  </div>
+</div>
+
+<div id="mainApp" style="display:none">
+<div class="shell">
+<header>
+  <div class="logo">สท</div>
+  <div class="ht">
+    <h1>สินไทยแทรกเตอร์ — Content Manager</h1>
+    <p>คิดคอนเทนต์ AI + ตารางงานรายสัปดาห์</p>
+  </div>
+  <div class="user-chip">
+    <div class="user-dot" id="connDot"></div>
+    <span class="user-name" id="userLabel"></span>
+    <button class="logout-btn" onclick="logout()">ออก</button>
+  </div>
+</header>
+
+<div class="sync-bar">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncTxt">กำลังเชื่อมต่อ...</span>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="swTab('gen',this)">✨ คิดคอนเทนต์</button>
+  <button class="tab" onclick="swTab('cl',this)" id="clTabBtn">📋 ตารางสัปดาห์<span class="badge" id="saveBadge" style="display:none">0</span></button>
+</div>
+
+<!-- GEN PAGE -->
+<div class="pg on" id="pg-gen">
+  <div class="cats" id="catBar">
+    <button class="cat on" data-c="ym">แทรกเตอร์ YM/EF</button>
+    <button class="cat" data-c="solis">Solis</button>
+    <button class="cat" data-c="used">รถมือสอง</button>
+    <button class="cat" data-c="internal">กิจกรรมบริษัท</button>
+    <button class="cat" data-c="marketing">งานการตลาด</button>
+    <button class="cat" data-c="delivery">ส่งมอบ/ซ่อม</button>
+  </div>
+  <div class="card">
+    <span class="lbl">✏️ บอกไอเดียคร่าวๆ ที่อยากทำ</span>
+    <textarea id="ideaIn" placeholder="เช่น: รถไถยันม่าร์ ไม่ดาวน์ ไม่ค้ำ โปรพิเศษลูกค้า ธกส."></textarea>
+    <div class="row2">
+      <div class="og"><label>โทนโพสต์</label>
+        <select id="toneS">
+          <option value="friendly">เป็นกันเอง ภาษาชาวบ้าน</option>
+          <option value="pro">มืออาชีพ น่าเชื่อถือ</option>
+          <option value="urgent">กระตุ้นด่วน urgency สูง</option>
+          <option value="story">เล่าเรื่อง storytelling</option>
+        </select>
+      </div>
+      <div class="og"><label>จุดขายหลัก</label>
+        <select id="angS">
+          <option value="price">ราคา/ดาวน์/ผ่อน</option>
+          <option value="quality">คุณภาพ/ความทนทาน</option>
+          <option value="service">บริการหลังการขาย</option>
+          <option value="season">ตรงฤดูกาล/ความต้องการ</option>
+          <option value="trust">ความน่าเชื่อถือ/ประสบการณ์</option>
+        </select>
+      </div>
+    </div>
+    <button class="gbtn" id="gBtn" onclick="generate()">
+      <div class="spin" id="spin"></div>
+      <span id="gTxt">✨ สร้างคอนเทนต์</span>
+    </button>
+    <div id="errD" class="err" style="display:none"></div>
+  </div>
+  <div id="resSec">
+    <div class="empty" id="emptyD"><p>พิมพ์ไอเดียด้านบน แล้วกด <strong>สร้างคอนเทนต์</strong></p></div>
+    <div id="resWrap"></div>
+  </div>
+</div>
+
+<!-- CHECKLIST PAGE -->
+<div class="pg" id="pg-cl">
+  <div class="wknav">
+    <button onclick="chWk(-1)">‹</button>
+    <span class="wklbl" id="wkLbl"></span>
+    <button onclick="chWk(1)">›</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="sn" id="sDone">0</div><div class="sl">เสร็จแล้ว</div></div>
+    <div class="stat"><div class="sn" id="sLeft">0</div><div class="sl">ค้างอยู่</div></div>
+    <div class="stat"><div class="sn" id="sPct">0%</div><div class="sl">ความคืบหน้า</div></div>
+  </div>
+  <div id="clSecs"></div>
+  <div class="rl-hdr">คอนเทนต์ที่โอเคแล้ว (ทุกคนเห็นร่วมกัน)</div>
+  <div id="savedList"><div class="no-saved">กำลังโหลด...</div></div>
+</div>
+</div>
+</div>
+
+<script>
+// ── CONFIG — แก้ตรงนี้อย่างเดียว ──
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFJ0gnXCm_RaYHK9VJDXs2k12z2enEeVFMCXfKg3VBxPJad2-E_5Q7TbupTsS8wPi4Rw/exec'; // ← วาง URL Apps Script ตรงนี้
+
+// ── DATA ──
+const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const CM={ym:{l:'แทรกเตอร์ YM/EF',ic:'🚜'},solis:{l:'Solis',ic:'🌾'},used:{l:'รถมือสอง',ic:'🔧'},internal:{l:'กิจกรรมบริษัท',ic:'🏢'},marketing:{l:'งานการตลาด',ic:'📍'},delivery:{l:'ส่งมอบ/ซ่อม',ic:'🚚'}};
+const TL={friendly:'เป็นกันเอง',pro:'มืออาชีพ',urgent:'กระตุ้นด่วน',story:'เล่าเรื่อง'};
+const AL={price:'ราคา/ดาวน์',quality:'คุณภาพ',service:'บริการ',season:'ตรงฤดูกาล',trust:'ความน่าเชื่อถือ'};
+const HT={
+  ym:'#รถไถยันม่าร์ #แทรกเตอร์ยันม่าร์ #รถไถ #ยันม่าร์ #YM351R #EF393T #สินไทยแทรกเตอร์ #แทรกเตอร์อีสาน #รถไถราคาถูก #ฟรีดาวน์',
+  solis:'#Solis #โซลิส #แทรกเตอร์Solis #รถไถ #แทรกเตอร์อีสาน #สินไทยแทรกเตอร์ #รถไถราคาถูก',
+  used:'#รถไถมือสอง #รถเกี่ยวมือสอง #รถขุดมือสอง #เครื่องจักรมือสอง #สินไทยแทรกเตอร์ #รถไถราคาถูก',
+  internal:'#สินไทยแทรกเตอร์ #ทีมงานสินไทย #แทรกเตอร์อีสาน',
+  marketing:'#สินไทยแทรกเตอร์ #แทรกเตอร์อีสาน #รถไถ #เกษตรกรไทย',
+  delivery:'#สินไทยแทรกเตอร์ #ส่งมอบรถ #รถไถใหม่ #แทรกเตอร์อีสาน',
+};
+const FOOTER='📞 086-460-9120 / 098-661-1966\n💬 แอดไลน์ : https://lin.ee/eNJqg6J\n🏢 ศูนย์บริการมาตรฐาน ทั้ง 9 สาขา ทั่วอีสาน';
+
+let currentUser='', activeCat='ym', rc=0, wkOff=0, hasHdr=false, clCache={};
+
+// ── AUTH ──
+function login(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(!n)return;
+  currentUser=n;
+  localStorage.setItem('stUser',n);
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('userLabel').textContent=n;
+  checkConn();
+  renderCL();
+}
+function logout(){
+  localStorage.removeItem('stUser');
+  location.reload();
+}
+window.addEventListener('load',()=>{
+  const u=localStorage.getItem('stUser');
+  if(u){document.getElementById('nameInput').value=u;login();}
+});
+
+// ── API ──
+async function api(payload){
+  const form=new FormData();
+  form.append('payload',JSON.stringify(payload));
+  const res=await fetch(SCRIPT_URL,{method:'POST',body:form,redirect:'follow'});
+  return res.json();
+}
+async function apiGet(params){
+  const q=new URLSearchParams(params).toString();
+  const res=await fetch(SCRIPT_URL+'?'+q,{redirect:'follow'});
+  return res.json();
+}
+async function checkConn(){
+  try{
+    const d=await apiGet({action:'ping'});
+    setSyncStatus('ok','เชื่อมต่อแล้ว');
+  }catch(e){setSyncStatus('err','ไม่สามารถเชื่อมต่อได้');}
+}
+function setSyncStatus(s,txt){
+  const dot=document.getElementById('syncDot'),t=document.getElementById('syncTxt');
+  dot.className='sync-dot '+s; t.textContent=txt;
+}
+
+// ── TABS ──
+function swTab(id,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');document.getElementById('pg-'+id).classList.add('on');
+  if(id==='cl'){renderCL();loadSaved();}
+}
+
+// ── CAT ──
+document.getElementById('catBar').querySelectorAll('.cat').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.cat').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');activeCat=b.dataset.c;updatePH();
+  });
+});
+function updatePH(){
+  const h={ym:'เช่น: รถไถยันม่าร์ ไม่ดาวน์ ไม่ค้ำ โปรพิเศษลูกค้า ธกส.',solis:'เช่น: Solis รุ่นใหม่ ราคาดี...',used:'เช่น: รถไถมือสอง สภาพดี พร้อมโอน...',internal:'เช่น: ต้อนรับลูกค้า วันเกิดพนักงาน...',marketing:'เช่น: ออกงานสัญจร อ.เดชอุดม...',delivery:'เช่น: ส่งมอบแทรกเตอร์ลูกค้าใหม่...'};
+  document.getElementById('ideaIn').placeholder=h[activeCat]||'พิมพ์ไอเดียคร่าวๆ...';
+}
+
+// ── GENERATE ──
+function mkPrompt(idea,cat,tone,angle){
+  const tg={friendly:'ภาษาเป็นกันเอง ใช้คำว่า "พี่น้องเกษตรกร" พูดตรงๆ เข้าใจง่าย',pro:'โทนมืออาชีพ น่าเชื่อถือ',urgent:'สร้าง urgency "จำกัด" "หมดแล้วหมดเลย" "รีบจอง"',story:'เล่าเรื่อง เริ่มจากปัญหาเกษตรกร แล้วนำไปสู่ทางออก'};
+  const ag={price:'เน้นดาวน์น้อย ผ่อนถูก ราคาคุ้มค่า',quality:'เน้นความทนทาน คุณภาพ',service:'เน้นบริการหลังการขาย',season:'เน้นสินค้าตรงฤดูกาล',trust:'เน้นประสบการณ์บริษัท'};
+  return `คุณเป็นผู้เชี่ยวชาญเขียน Facebook Content ธุรกิจเครื่องจักรกลการเกษตรไทย
+เพจ: สินไทยแทรกเตอร์ — แทรกเตอร์ รถเกี่ยว ครบวงจร ภาคอีสาน
+หมวด: ${CM[cat].l} | ไอเดีย: "${idea}" | โทน: ${tg[tone]} | จุดขาย: ${ag[angle]}
+
+โปรพิเศษที่ต้องแทรกอย่างเป็นธรรมชาติ:
+- ลูกค้า ธกส./ชาวไร่อ้อย/ผู้นำชุมชน (ผู้ใหญ่บ้าน รองฯ สารวัตร กำนัน) → โปรเสริมพิเศษ ส่วนลดกว่า 2 แสน ฟรีดาวน์ ไม่ต้องค้ำ
+- รับเทิร์นทุกคัน ทุกรุ่น ทุกยี่ห้อ ปิดหนี้-ปิดไฟแนนซ์ ไม่ต้องมีเงินดาวน์ แถมเงินสดกลับบ้านอีก 1 แสน
+
+เขียน caption 2 เวอร์ชั่น: hook ดึงดูด, 5-10 บรรทัด, emoji เหมาะสม, จบด้วย CTA (ไม่ต้องใส่เบอร์/hashtag)
+ตอบ JSON เท่านั้น: {"v1":{"label":"เวอร์ชั่น A — ชื่อสั้น","text":"..."},"v2":{"label":"เวอร์ชั่น B — ชื่อสั้น","text":"..."}}`;
+}
+
+function fullTxt(body,cat){return body+'\n\n'+FOOTER+'\n\n'+(HT[cat]||'');}
+
+async function generate(){
+  const idea=document.getElementById('ideaIn').value.trim();
+  if(!idea){document.getElementById('ideaIn').focus();return;}
+  const tone=document.getElementById('toneS').value,angle=document.getElementById('angS').value;
+  const btn=document.getElementById('gBtn'),sp=document.getElementById('spin'),gt=document.getElementById('gTxt'),err=document.getElementById('errD');
+  btn.disabled=true;sp.style.display='block';gt.textContent='กำลังคิด...';err.style.display='none';
+  document.getElementById('emptyD').style.display='none';
+  setSyncStatus('loading','กำลังสร้างคอนเทนต์...');
+  try{
+    const d=await api({action:'generate',body:{model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:mkPrompt(idea,activeCat,tone,angle)}]}});
+    const raw=d.content.map(b=>b.text||'').join('');
+    const p=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    rc++;
+    const wrap=document.getElementById('resWrap');
+    if(!hasHdr){const h=document.createElement('div');h.className='rl-hdr';h.textContent='แคปชั่นที่สร้างขึ้น';wrap.prepend(h);hasHdr=true;}
+    const card=document.createElement('div');card.className='rcard';
+    const cid='r'+rc;
+    card.innerHTML=`<div class="rtag">${CM[activeCat].ic} ${CM[activeCat].l} · ${TL[tone]} · ${AL[angle]}</div>
+      ${mkVer(p.v1,cid+'a',activeCat,tone,angle,idea)}
+      ${mkVer(p.v2,cid+'b',activeCat,tone,angle,idea)}`;
+    wrap.prepend(card);
+    setSyncStatus('ok','เชื่อมต่อแล้ว');
+  }catch(e){err.textContent='เกิดข้อผิดพลาด กรุณาลองใหม่';err.style.display='block';setSyncStatus('err','เกิดข้อผิดพลาด');}
+  finally{btn.disabled=false;sp.style.display='none';gt.textContent='✨ สร้างคอนเทนต์';}
+}
+
+function mkVer(v,uid,cat,tone,angle,idea){
+  const ht=HT[cat]||'';
+  const esc=s=>s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+  return `<div style="border-top:1px solid #d0ddd4">
+    <div style="padding:8px 14px 0;font-size:11px;font-weight:500;color:#1a5c2e">${v.label}</div>
+    <div class="rbody" id="${uid}b">${v.text}</div>
+    <div class="rfooter"><div class="rfooter-lbl">ต่อท้ายอัตโนมัติ</div>
+      <div class="rfooter-body">${FOOTER}</div>
+      <div class="rfooter-ht">${ht}</div></div>
+    <span id="${uid}c" data-cat="${cat}" data-tone="${tone}" data-angle="${angle}" data-vl="${esc(v.label)}" style="display:none"></span>
+    <div class="ract">
+      <button class="abtn" onclick="cpRes('${uid}',this)">📋 คัดลอกทั้งหมด</button>
+      <button class="abtn regen" onclick="regenV('${uid}','${esc(idea)}','${tone}','${angle}','${cat}')">🔄 เขียนใหม่</button>
+      <button class="abtn ok" onclick="saveCt('${uid}')">✓ โอเค ใช้เลย</button>
+    </div></div>`;
+}
+
+function cpRes(uid,btn){
+  const body=document.getElementById(uid+'b').textContent;
+  const cat=document.getElementById(uid+'c').dataset.cat;
+  navigator.clipboard.writeText(fullTxt(body,cat)).then(()=>{
+    btn.classList.add('copied');btn.textContent='✓ คัดลอกแล้ว';
+    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 คัดลอกทั้งหมด';},2000);
+  });
+}
+
+async function saveCt(uid){
+  const meta=document.getElementById(uid+'c');
+  const body=document.getElementById(uid+'b').textContent;
+  const cat=meta.dataset.cat;
+  const data={user:currentUser,cat,catLabel:CM[cat].l+' '+CM[cat].ic,tone:TL[meta.dataset.tone],angle:AL[meta.dataset.angle],label:meta.dataset.vl,text:fullTxt(body,cat)};
+  const btn=event.target;
+  btn.textContent='กำลังบันทึก...';btn.disabled=true;
+  try{
+    await api({action:'saveContent',data});
+    btn.textContent='✓ บันทึกแล้ว!';btn.style.background='#1a5c2e';btn.style.color='#fff';
+    setTimeout(()=>{btn.textContent='✓ โอเค ใช้เลย';btn.style.background='';btn.style.color='';btn.disabled=false;},1800);
+    loadSaved();
+  }catch(e){btn.textContent='✓ โอเค ใช้เลย';btn.disabled=false;}
+}
+
+async function regenV(uid,idea,tone,angle,cat){
+  const bd=document.getElementById(uid+'b');
+  bd.textContent='กำลังเขียนใหม่...';
+  const cleanIdea=idea.replace(/\\n/g,'\n').replace(/\\'/g,"'").replace(/\\\\/g,'\\');
+  try{
+    const d=await api({action:'generate',body:{model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:mkPrompt(cleanIdea,cat,tone,angle)+'\n\nเขียนเวอร์ชั่นใหม่ที่แตกต่างออกไป'}]}});
+    const raw=d.content.map(b=>b.text||'').join('');
+    const p=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const nv=uid.endsWith('a')?p.v1:p.v2;
+    bd.textContent=nv.text;
+  }catch(e){bd.textContent='เกิดข้อผิดพลาด กรุณาลองใหม่';}
+}
+
+// ── SAVED CONTENT ──
+async function loadSaved(){
+  document.getElementById('savedList').innerHTML='<div class="no-saved">กำลังโหลด...</div>';
+  try{
+    const d=await apiGet({action:'getContents'});
+    renderSaved(d.items||[]);
+  }catch(e){document.getElementById('savedList').innerHTML='<div class="no-saved">โหลดไม่ได้ กรุณาลองใหม่</div>';}
+}
+
+function renderSaved(items){
+  const el=document.getElementById('savedList');
+  document.getElementById('saveBadge').textContent=items.length;
+  document.getElementById('saveBadge').style.display=items.length?'':'none';
+  if(!items.length){el.innerHTML='<div class="no-saved">ยังไม่มีคอนเทนต์ที่บันทึกไว้<br>กด "✓ โอเค ใช้เลย" จากหน้าคิดคอนเทนต์</div>';return;}
+  el.innerHTML=items.map(s=>`<div class="si">
+    <div class="si-hdr">
+      <span class="si-cat">${s.catLabel}</span>
+      <span class="si-meta">${s.tone} · ${s.angle} · ${s.savedAt} · โดย ${s.user}</span>
+      <button class="del-btn" onclick="delS('${s.id}')">ลบ</button>
+    </div>
+    <div class="si-lbl">${s.label}</div>
+    <div class="si-txt">${s.text}</div>
+    <div class="si-acts"><button class="abtn" onclick="cpS(this,'${s.id.replace(/'/g,"\\'")}')">📋 คัดลอก</button></div>
+  </div>`).join('');
+  window._savedItems=items;
+}
+
+async function delS(id){
+  if(!confirm('ลบคอนเทนต์นี้?'))return;
+  await api({action:'deleteContent',id});
+  loadSaved();
+}
+function cpS(btn,id){
+  const s=window._savedItems&&window._savedItems.find(x=>x.id===id);
+  if(!s)return;
+  navigator.clipboard.writeText(s.text).then(()=>{
+    btn.classList.add('copied');btn.textContent='✓ คัดลอกแล้ว';
+    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 คัดลอก';},2000);
+  });
+}
+
+// ── CHECKLIST ──
+function wkStart(){const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);const r=new Date(d);r.setDate(diff);r.setHours(0,0,0,0);return r;}
+function addD(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmD(d){return `${d.getDate()} ${TM[d.getMonth()]} ${d.getFullYear()+543}`;}
+const baseWk=wkStart();
+function getWS(){return addD(baseWk,wkOff*7);}
+function wkKey(){return getWS().toISOString().slice(0,10);}
+function chWk(n){wkOff+=n;renderCL();}
+
+function mkTasks(ws){
+  const isW1=ws.getDate()<=7;
+  return [
+    {id:'ym',cat:'plan',l:'โปรฯ แทรกเตอร์ YM/EF',tag:'tym',tl:'ยิงแอดหลัก',sub:isW1?'ต้นเดือน — คอนเทนต์ใหม่ + เปิดแอด':'กลางเดือน — คอนเทนต์ชุด 2 + เปิดแอดรอบใหม่',gc:'ym'},
+    {id:'solis',cat:'plan',l:'โปรฯ Solis',tag:'tsl',tl:'ยิงแอดรอง',sub:isW1?'ต้นเดือน — อัปเดตรูป/ราคา + ยิงแอด':'ไม่ต้องยิงแอดรอบนี้ ถ้าต้นเดือนทำแล้ว',gc:'solis'},
+    ...(isW1?[{id:'used',cat:'plan',l:'รถมือสองประจำเดือน',tag:'tus',tl:'มือสอง',sub:'อัปเดตสต็อกใหม่ — รถไถ รถเกี่ยว อุปกรณ์',gc:'used'}]:[]),
+    {id:'internal',cat:'plan',l:'กิจกรรมภายในบริษัท',tag:'tin',tl:'องค์กร',sub:'ถ้ามีกิจกรรมสัปดาห์นี้ ถ่ายรูปทีมงาน เบื้องหลัง',gc:'internal'},
+    {id:'mkt',cat:'asap',l:'งานการตลาด / สัญจร / สาธิต',sub:'ถ่ายรูประหว่างงาน ลงในวันนั้นเลย',note:true,np:'บันทึก: วันที่ / สถานที่ / รายละเอียด...'},
+    {id:'del',cat:'asap',l:'รูปส่งมอบรถ',sub:'ถ่ายรูปพิธีส่งมอบ ลงทันที',note:true,np:'บันทึก: ลูกค้า / รุ่นรถ / วันที่...'},
+    {id:'rep',cat:'asap',l:'ซ่อมนอกสถานที่',sub:'ออกซ่อม ถ่ายรูปช่าง ลงวันนั้น',note:true,np:'บันทึก: พื้นที่ / ประเภทงาน...'},
+  ];
+}
+
+async function renderCL(){
+  const wk=wkKey();
+  const ws=getWS(),we=addD(ws,6);
+  document.getElementById('wkLbl').textContent=`สัปดาห์ ${fmD(ws)} – ${fmD(we)}`;
+  // load from server
+  setSyncStatus('loading','กำลังโหลด...');
+  try{
+    const d=await apiGet({action:'getChecklist',weekKey:wk});
+    clCache[wk]=d.items||{};
+    setSyncStatus('ok','เชื่อมต่อแล้ว');
+  }catch(e){
+    if(!clCache[wk])clCache[wk]={};
+    setSyncStatus('err','ใช้ข้อมูล offline');
+  }
+  buildCLUI(wk);
+}
+
+function buildCLUI(wk){
+  const ws=getWS();
+  const tasks=mkTasks(ws);
+  const pt=tasks.filter(t=>t.cat==='plan');
+  const done=pt.filter(t=>clCache[wk][t.id]&&clCache[wk][t.id].checked).length;
+  const total=pt.length;
+  document.getElementById('sDone').textContent=done;
+  document.getElementById('sLeft').textContent=total-done;
+  document.getElementById('sPct').textContent=Math.round(done/total*100)+'%';
+  let html='';
+  [{cat:'plan',l:'วางแผนล่วงหน้า',bc:'bp',bd:'ต้องเตรียมก่อนโพสต์'},{cat:'asap',l:'มีเมื่อไหร่ โพสต์เมื่อนั้น',bc:'ba',bd:'ถ่ายรูปแล้วลงทันที'}].forEach(sec=>{
+    const st=tasks.filter(t=>t.cat===sec.cat);if(!st.length)return;
+    html+=`<div class="cl-card"><div class="cl-hdr"><span class="cl-title">${sec.l}</span><span class="cl-badge ${sec.bc}">${sec.bd}</span></div>`;
+    st.forEach(t=>{
+      const item=clCache[wk][t.id]||{};
+      const ck=!!item.checked;
+      html+=`<div class="trow">
+        <div class="cb${ck?' ck':''}" onclick="togCL('${wk}','${t.id}')" role="checkbox" aria-checked="${ck}"></div>
+        <div class="tbody">
+          <div class="tlbl${ck?' dn':''}">${t.tag?`<span class="ttag ${t.tag}">${t.tl}</span>`:''}${t.l}</div>
+          <div class="tsub">${t.sub}</div>
+          ${item.user?`<div class="who">✓ ติ๊กโดย ${item.user} · ${item.updatedAt||''}</div>`:''}
+          ${t.gc?`<button class="go-btn" onclick="goGen('${t.gc}')">✨ คิดคอนเทนต์งานนี้</button>`:''}
+          ${t.note?`<textarea class="note-a" placeholder="${t.np}" onchange="svNote('${wk}','${t.id}',this.value)">${item.note||''}</textarea>`:''}
+        </div></div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('clSecs').innerHTML=html;
+}
+
+async function togCL(wk,id){
+  const cur=!!(clCache[wk][id]&&clCache[wk][id].checked);
+  if(!clCache[wk][id])clCache[wk][id]={};
+  clCache[wk][id].checked=!cur;
+  clCache[wk][id].user=currentUser;
+  clCache[wk][id].updatedAt=new Date().toLocaleString('th-TH');
+  buildCLUI(wk);
+  try{await api({action:'saveChecklist',data:{weekKey:wk,taskId:id,checked:!cur,note:clCache[wk][id].note||'',user:currentUser}});}
+  catch(e){}
+}
+
+async function svNote(wk,id,val){
+  if(!clCache[wk][id])clCache[wk][id]={};
+  clCache[wk][id].note=val;
+  try{await api({action:'saveChecklist',data:{weekKey:wk,taskId:id,checked:!!(clCache[wk][id].checked),note:val,user:currentUser}});}
+  catch(e){}
+}
+
+function goGen(cat){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelector('[onclick*="gen,"]').classList.add('on');
+  document.getElementById('pg-gen').classList.add('on');
+  document.querySelectorAll('.cat').forEach(b=>{b.classList.toggle('on',b.dataset.c===cat);});
+  activeCat=cat;updatePH();document.getElementById('ideaIn').focus();
+}
+
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')generate();});
+</script>
+</body>
+</html>
